@@ -22,9 +22,10 @@ const db = getFirestore(app);
  */
 async function loadUserProfile(uid) {
     const pfpImg = document.getElementById('userPfp');
-    const usernameSpan = document.getElementById('usernameDisplay');
+    const usernameSpan = document.getElementById('usernameDisplay'); // Widget alto
+    const mainUsernameSpan = document.getElementById('displayUsername'); // Testo grande main
 
-    if (!pfpImg || !usernameSpan) return;
+    // Rimosso il 'return' bloccante. Ora il codice controlla gli elementi singolarmente.
 
     try {
         const userRef = doc(db, "users", uid);
@@ -32,20 +33,26 @@ async function loadUserProfile(uid) {
 
         if (userSnap.exists()) {
             const userData = userSnap.data();
-            
-            // Visualizzazione fedele: mantiene maiuscole e minuscole del DB
             const rawUsername = userData.username || "Utente";
-            usernameSpan.textContent = rawUsername; 
             
-            if (userData.pfp) {
+            // Aggiorna il widget in alto se esiste
+            if (usernameSpan) usernameSpan.textContent = rawUsername; 
+            
+            // Aggiorna il testo grande a sinistra se esiste
+            if (mainUsernameSpan) mainUsernameSpan.textContent = rawUsername; 
+            
+            // Aggiorna la pfp se esiste
+            if (pfpImg && userData.pfp) {
                 pfpImg.src = userData.pfp;
             }
         } else {
-            usernameSpan.textContent = "Guest";
+            if (usernameSpan) usernameSpan.textContent = "Guest";
+            if (mainUsernameSpan) mainUsernameSpan.textContent = "Guest";
         }
     } catch (error) {
         console.error("Errore:", error);
-        usernameSpan.textContent = "Offline";
+        if (usernameSpan) usernameSpan.textContent = "Offline";
+        if (mainUsernameSpan) mainUsernameSpan.textContent = "Offline";
     }
 }
 

@@ -17,8 +17,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Elementi DOM
-const displayUsername = document.getElementById('displayUsername');
-const currentPfp = document.getElementById('currentPfp');
 const editUsername = document.getElementById('editUsername');
 const editBio = document.getElementById('editBio');
 const saveBtn = document.getElementById('saveBtn');
@@ -27,6 +25,24 @@ const deleteAccountBtn = document.getElementById('deleteAccountBtn');
 const accountNavLinks = Array.from(document.querySelectorAll(".account-nav-link"));
 const viewAccount = document.getElementById("account");
 const viewSessione = document.getElementById("sessione");
+
+const usernameDisplay = document.getElementById('usernameDisplay'); 
+const displayUsername = document.getElementById('displayUsername'); 
+const userPfp = document.getElementById('userPfp');
+
+const listaBenvenuti = [
+    "Benvenuto, ",
+    "Ciao, ",
+    "Bentornato, ",
+    "La tua dashboard, ",
+    "Pronto all'azione, ",
+    "Felice di rivederti, "
+];
+
+const ottieniSalutoCasuale = () => {
+    const randomIndex = Math.floor(Math.random() * listaBenvenuti.length);
+    return listaBenvenuti[randomIndex];
+};
 
 const setActiveNav = (hash) => {
     accountNavLinks.forEach((link) => {
@@ -63,14 +79,13 @@ if (accountNavLinks.length) {
     });
 }
 
-// 2. Gestione Autenticazione (Risolve il problema del refresh)
+// 2. Gestione Autenticazione
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         console.log("Utente autenticato:", user.uid);
         await loadUserData(user.uid);
     } else {
         console.warn("Nessun utente loggato. Reindirizzamento...");
-        // window.location.href = "login.html"; // Decommenta quando hai la pagina di login pronta
     }
 });
 
@@ -82,18 +97,30 @@ async function loadUserData(uid) {
 
         if (userSnap.exists()) {
             const data = userSnap.data();
+            const username = data.username || "Utente";
 
-            // Aggiorna la UI con i dati del database
-            displayUsername.textContent = data.username || "Utente";
-            currentPfp.src = data.pfp || "https://via.placeholder.com/70";
+            const salutoScelto = ottieniSalutoCasuale();
+
+            if (usernameDisplay) usernameDisplay.textContent = username;
             
-            // Popola i campi input
-            editUsername.value = data.username || "";
-            editBio.value = data.bio || "";
-            
-            console.log("Dati caricati correttamente");
+            const mainUsernameSpan = document.getElementById('displayUsername');
+            if (mainUsernameSpan) {
+                mainUsernameSpan.innerHTML = `${salutoScelto}<span id="usernameColor">${username}</span>`;
+            }
+
+            if (userPfp && data.pfp) {
+                userPfp.src = data.pfp;
+                userPfp.alt = username;
+            }
+
+            if (editUsername) editUsername.value = username;
+            if (editBio) editBio.value = data.bio || "";
+
+            console.log("Dati caricati con successo!");
         } else {
             console.error("Documento utente non trovato in Firestore per l'UID:", uid);
+            const mainUsernameSpan = document.getElementById('displayUsername');
+            if (mainUsernameSpan) mainUsernameSpan.textContent = "Ciao, Ospite";
         }
     } catch (error) {
         console.error("Errore durante il recupero dei dati:", error);
@@ -113,13 +140,13 @@ if (saveBtn) saveBtn.addEventListener('click', async () => {
         const updatedData = {
             username: editUsername.value,
             bio: editBio.value
-            // Nota: il pfp viene aggiornato tramite Pfp.js caricando su Catbox
         };
 
         await updateDoc(userRef, updatedData);
 
-        // Aggiorna la UI locale
-        displayUsername.textContent = editUsername.value;
+        if (displayUsername) {
+            displayUsername.innerHTML = `Profilo aggiornato, <span id="usernameColor">${editUsername.value}</span>`;
+        }
         
         alert("Profilo aggiornato con successo!");
     } catch (error) {
@@ -161,7 +188,6 @@ if (deleteAccountBtn) {
         deleteAccountBtn.textContent = "Eliminazione in corso...";
 
         try {
-            // Prima elimina i dati su Firestore (finché l'utente è autenticato)
             const userRef = doc(db, "users", user.uid);
             await deleteDoc(userRef);
 
@@ -171,7 +197,7 @@ if (deleteAccountBtn) {
         } catch (error) {
             console.error("Errore eliminazione account:", error);
             if (String(error?.code || "").includes("requires-recent-login")) {
-                alert("Per eliminare l'account devi rieffettuare l'accesso (sicurezza). I dati su Firestore potrebbero essere già stati rimossi: effettua logout e rientra, poi riprova.");
+                alert("Per eliminare l'account devi rieffettuare l'accesso (sicurezza).");
             } else {
                 alert("Errore durante l'eliminazione dell'account.");
             }
@@ -181,7 +207,7 @@ if (deleteAccountBtn) {
         }
     });
 }
-// Funzione globale per aggiornare Firestore quando l'upload della foto finisce
+
 window.updateFirestorePfp = async (newUrl) => {
     const user = auth.currentUser;
     if (user) {

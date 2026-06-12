@@ -7,8 +7,35 @@
     <link rel="stylesheet" href="/css/style.css">
     <script type="module" src="/js/FolderLogic.js"></script>
     <script type="module" src="/js/web.js"></script>
-    <script type="module" src="/js/FirebaseDashboard.js"></script>
+    <script type="module" src="/js/custom/FirebaseDashboard.js"></script>
     <script type="module" src="/js/BtnLogOut.js"></script>
+    <style>
+        @import url('/fonts/fonts.css'); /* Importa i font locali */
+        
+        .card-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.username-big {
+    font-family: 'poppins', sans-serif;
+    font-size: 2.2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 2.5rem;
+    display: inline-block;
+    width: auto;
+    color: #ffffff;
+}
+
+#usernameColor {
+    color: #b6e5ff;
+}
+    </style>
 </head>
 <body>
 
@@ -31,13 +58,14 @@
 
 
 <main class="card-container">
+<span id="displayUsername" class="username-big">Caricamento... <span id="usernameColor"></span></span>
     <div class="apps-wrapper">
 
         
         
         <a href="https://ai.mattedev.com" class="app-item">
             <div class="app-icon-container">
-                <img src="https://i.postimg.cc/4NSL4N1H/ailogo.png" alt="Account" class="app-icon"> <!-- Placeholder link, replace in future with media.matt... -->
+                <img src="https://media.mattedev.com/img/ai/ailogo.png" alt="Account" class="app-icon"> 
             </div>
             <span class="app-name">AI</span>
         </a>
@@ -68,7 +96,7 @@
             <div class="app-icon-container">
                 <img src="https://media.mattedev.com/img/mattemeteo/icon.ico" alt="Meteo" class="app-icon">
             </div>
-            <span class="app-name">Meteo</span>
+            <span class="app-name">Horizon</span>
         </a>
         
         <div class="app-item" id="openFolder">
