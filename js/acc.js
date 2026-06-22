@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getCachedProfile, renderCachedProfile, cacheProfile } from './profileCache.js';
 
 // 1. Configurazione Iniziale
 const firebaseConfig = {
@@ -28,7 +29,7 @@ const viewSessione = document.getElementById("sessione");
 
 const usernameDisplay = document.getElementById('usernameDisplay'); 
 const displayUsername = document.getElementById('displayUsername'); 
-const userPfp = document.getElementById('userPfp');
+const userPfp = document.getElementById('currentPfp');
 
 const listaBenvenuti = [
     "Benvenuto, ",
@@ -91,6 +92,32 @@ onAuthStateChanged(auth, async (user) => {
 
 // 3. Funzione per caricare i dati da Firestore
 async function loadUserData(uid) {
+    if (!navigator.onLine) {
+        const cachedProfile = getCachedProfile(uid);
+        const mainUsernameSpan = document.getElementById('displayUsername');
+
+        if (renderCachedProfile({
+            uid,
+            profileData: cachedProfile,
+            usernameDisplay,
+            mainUsernameDisplay: mainUsernameSpan,
+            pfpImage: userPfp,
+            greetingPrefix: `${ottieniSalutoCasuale()}`,
+            fallbackUsername: "Offline"
+        })) {
+            if (editUsername) editUsername.value = cachedProfile.username || "";
+            if (editBio) editBio.value = cachedProfile.bio || "";
+            console.warn("Browser offline, uso i dati in cache.");
+            return;
+        }
+
+        if (usernameDisplay) usernameDisplay.textContent = "Offline";
+        if (mainUsernameSpan) mainUsernameSpan.textContent = "Ciao, Offline";
+        if (editUsername) editUsername.value = "";
+        if (editBio) editBio.value = "";
+        return;
+    }
+
     try {
         const userRef = doc(db, "users", uid);
         const userSnap = await getDoc(userRef);
@@ -98,31 +125,61 @@ async function loadUserData(uid) {
         if (userSnap.exists()) {
             const data = userSnap.data();
             const username = data.username || "Utente";
-
-            const salutoScelto = ottieniSalutoCasuale();
-
-            if (usernameDisplay) usernameDisplay.textContent = username;
-            
             const mainUsernameSpan = document.getElementById('displayUsername');
-            if (mainUsernameSpan) {
-                mainUsernameSpan.innerHTML = `${salutoScelto}<span id="usernameColor">${username}</span>`;
-            }
-
-            if (userPfp && data.pfp) {
-                userPfp.src = data.pfp;
-                userPfp.alt = username;
-            }
+            renderCachedProfile({
+                uid,
+                profileData: data,
+                usernameDisplay,
+                mainUsernameDisplay: mainUsernameSpan,
+                pfpImage: userPfp,
+                greetingPrefix: `${ottieniSalutoCasuale()}`,
+                fallbackUsername: "Utente"
+            });
 
             if (editUsername) editUsername.value = username;
             if (editBio) editBio.value = data.bio || "";
 
             console.log("Dati caricati con successo!");
         } else {
-            console.error("Documento utente non trovato in Firestore per l'UID:", uid);
             const mainUsernameSpan = document.getElementById('displayUsername');
+            const cachedProfile = getCachedProfile(uid);
+
+            if (renderCachedProfile({
+                uid,
+                profileData: cachedProfile,
+                usernameDisplay,
+                mainUsernameDisplay: mainUsernameSpan,
+                pfpImage: userPfp,
+                greetingPrefix: `${ottieniSalutoCasuale()}`,
+                fallbackUsername: "Ospite"
+            })) {
+                if (editUsername) editUsername.value = cachedProfile.username || "";
+                if (editBio) editBio.value = cachedProfile.bio || "";
+                return;
+            }
+
+            console.error("Documento utente non trovato in Firestore per l'UID:", uid);
             if (mainUsernameSpan) mainUsernameSpan.textContent = "Ciao, Ospite";
         }
     } catch (error) {
+        const mainUsernameSpan = document.getElementById('displayUsername');
+        const cachedProfile = getCachedProfile(uid);
+
+        if (renderCachedProfile({
+            uid,
+            profileData: cachedProfile,
+            usernameDisplay,
+            mainUsernameDisplay: mainUsernameSpan,
+            pfpImage: userPfp,
+            greetingPrefix: `${ottieniSalutoCasuale()}`,
+            fallbackUsername: "Offline"
+        })) {
+            if (editUsername) editUsername.value = cachedProfile.username || "";
+            if (editBio) editBio.value = cachedProfile.bio || "";
+            console.warn("Firestore non raggiungibile, uso i dati in cache.");
+            return;
+        }
+
         console.error("Errore durante il recupero dei dati:", error);
     }
 }
@@ -143,6 +200,7 @@ if (saveBtn) saveBtn.addEventListener('click', async () => {
         };
 
         await updateDoc(userRef, updatedData);
+        cacheProfile(user.uid, updatedData);
 
         if (displayUsername) {
             displayUsername.innerHTML = `Profilo aggiornato, <span id="usernameColor">${editUsername.value}</span>`;
@@ -213,6 +271,7 @@ window.updateFirestorePfp = async (newUrl) => {
     if (user) {
         const userRef = doc(db, "users", user.uid);
         await updateDoc(userRef, { pfp: newUrl });
+        cacheProfile(user.uid, { pfp: newUrl });
         console.log("Firestore aggiornato con il nuovo URL della foto!");
     }
 };

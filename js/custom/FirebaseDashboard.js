@@ -1,6 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getCachedProfile, renderCachedProfile } from '../profileCache.js';
 
 // 1. Configurazione Firebase
 const firebaseConfig = {
@@ -39,37 +40,82 @@ const ottieniSalutoCasuale = () => {
  * Carica i dati dell'utente da Firestore (Versione specifica per Dashboard)
  */
 async function loadUserData(uid) {
+    const usernameDisplay = document.getElementById('usernameDisplay');
+    const mainUsernameSpan = document.getElementById('displayUsername');
+    const userPfp = document.getElementById('userPfp');
+
+    if (!navigator.onLine) {
+        const cachedProfile = getCachedProfile(uid);
+        if (renderCachedProfile({
+            uid,
+            profileData: cachedProfile,
+            usernameDisplay,
+            mainUsernameDisplay: mainUsernameSpan,
+            pfpImage: userPfp,
+            greetingPrefix: `${ottieniSalutoCasuale()}`,
+            fallbackUsername: "Offline"
+        })) {
+            console.warn("Browser offline, uso i dati in cache.");
+            return;
+        }
+
+        if (usernameDisplay) usernameDisplay.textContent = "Offline";
+        if (mainUsernameSpan) mainUsernameSpan.textContent = "Ciao, Offline";
+        return;
+    }
+
     try {
         const userRef = doc(db, "users", uid);
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
             const data = userSnap.data();
-            const username = data.username || "Utente";
 
-            const salutoScelto = ottieniSalutoCasuale();
-
-            const usernameDisplay = document.getElementById('usernameDisplay');
-            if (usernameDisplay) usernameDisplay.textContent = username;
-            
-            const mainUsernameSpan = document.getElementById('displayUsername');
-            if (mainUsernameSpan) {
-                mainUsernameSpan.innerHTML = `${salutoScelto}<span id="usernameColor">${username}</span>`;
-            }
-
-            const userPfp = document.getElementById('userPfp');
-            if (userPfp && data.pfp) {
-                userPfp.src = data.pfp;
-                userPfp.alt = username;
-            }
+            renderCachedProfile({
+                uid,
+                profileData: data,
+                usernameDisplay,
+                mainUsernameDisplay: mainUsernameSpan,
+                pfpImage: userPfp,
+                greetingPrefix: `${ottieniSalutoCasuale()}`,
+                fallbackUsername: "Utente"
+            });
 
             console.log("Dati caricati con successo sulla Dashboard!");
         } else {
+            const cachedProfile = getCachedProfile(uid);
+
+            if (renderCachedProfile({
+                uid,
+                profileData: cachedProfile,
+                usernameDisplay,
+                mainUsernameDisplay: mainUsernameSpan,
+                pfpImage: userPfp,
+                greetingPrefix: `${ottieniSalutoCasuale()}`,
+                fallbackUsername: "Ospite"
+            })) {
+                return;
+            }
+
             console.error("Documento utente non trovato in Firestore per l'UID:", uid);
-            const mainUsernameSpan = document.getElementById('displayUsername');
             if (mainUsernameSpan) mainUsernameSpan.textContent = "Ciao, Ospite";
         }
     } catch (error) {
+        const cachedProfile = getCachedProfile(uid);
+
+        if (renderCachedProfile({
+            uid,
+            profileData: cachedProfile,
+            usernameDisplay,
+            mainUsernameDisplay: mainUsernameSpan,
+            pfpImage: userPfp,
+            greetingPrefix: `${ottieniSalutoCasuale()}`,
+            fallbackUsername: "Offline"
+        })) {
+            console.warn("Firestore non raggiungibile, uso i dati in cache.");
+            return;
+        }
+
         console.error("Errore durante il recupero dei dati:", error);
     }
 }

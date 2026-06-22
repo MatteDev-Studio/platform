@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; // Importa Firestore
+import { cacheProfile } from "./profileCache.js";
 
 // 1. Configurazione Firebase
 const firebaseConfig = {
@@ -97,6 +98,12 @@ confirmUpload.onclick = async () => {
     warningModal.setAttribute("aria-hidden", "true");
     if (!pendingFile || !currentUserUID) return;
 
+    if (!navigator.onLine) {
+        if (mainText) mainText.innerText = "Sei offline, impossibile caricare l'immagine.";
+        alert("Sei offline: il caricamento della foto non puo essere completato.");
+        return;
+    }
+
     if (mainText) mainText.innerText = "Elaborazione immagine...";
 
     const formData = new FormData();
@@ -119,6 +126,7 @@ confirmUpload.onclick = async () => {
             await updateDoc(userRef, {
                 pfp: data.url // Salva il link nel campo 'pfp' del documento UID
             });
+            cacheProfile(currentUserUID, { pfp: data.url });
 
             // 3. Aggiorna UI
             currentPfp.src = data.url;

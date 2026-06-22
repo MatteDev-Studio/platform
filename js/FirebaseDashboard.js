@@ -1,6 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getCachedProfile, renderCachedProfile } from './profileCache.js';
 
 // 1. Configurazione Firebase
 const firebaseConfig = {
@@ -27,30 +28,74 @@ async function loadUserProfile(uid) {
 
     // Rimosso il 'return' bloccante. Ora il codice controlla gli elementi singolarmente.
 
+    if (!navigator.onLine) {
+        const cachedProfile = getCachedProfile(uid);
+        if (renderCachedProfile({
+            uid,
+            profileData: cachedProfile,
+            usernameDisplay: usernameSpan,
+            mainUsernameDisplay: mainUsernameSpan,
+            pfpImage: pfpImg,
+            greetingPrefix: "",
+            fallbackUsername: "Offline"
+        })) {
+            console.warn("Browser offline, uso i dati in cache.");
+            return;
+        }
+
+        if (usernameSpan) usernameSpan.textContent = "Offline";
+        if (mainUsernameSpan) mainUsernameSpan.textContent = "Offline";
+        return;
+    }
+
     try {
         const userRef = doc(db, "users", uid);
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
             const userData = userSnap.data();
-            const rawUsername = userData.username || "Utente";
-            
-            // Aggiorna il widget in alto se esiste
-            if (usernameSpan) usernameSpan.textContent = rawUsername; 
-            
-            // Aggiorna il testo grande a sinistra se esiste
-            if (mainUsernameSpan) mainUsernameSpan.textContent = rawUsername; 
-            
-            // Aggiorna la pfp se esiste
-            if (pfpImg && userData.pfp) {
-                pfpImg.src = userData.pfp;
-            }
+            renderCachedProfile({
+                uid,
+                profileData: userData,
+                usernameDisplay: usernameSpan,
+                mainUsernameDisplay: mainUsernameSpan,
+                pfpImage: pfpImg,
+                greetingPrefix: "",
+                fallbackUsername: "Utente"
+            });
         } else {
+            const cachedProfile = getCachedProfile(uid);
+            if (renderCachedProfile({
+                uid,
+                profileData: cachedProfile,
+                usernameDisplay: usernameSpan,
+                mainUsernameDisplay: mainUsernameSpan,
+                pfpImage: pfpImg,
+                greetingPrefix: "",
+                fallbackUsername: "Guest"
+            })) {
+                return;
+            }
+
             if (usernameSpan) usernameSpan.textContent = "Guest";
             if (mainUsernameSpan) mainUsernameSpan.textContent = "Guest";
         }
     } catch (error) {
-        console.error("Errore:", error);
+        const cachedProfile = getCachedProfile(uid);
+        if (renderCachedProfile({
+            uid,
+            profileData: cachedProfile,
+            usernameDisplay: usernameSpan,
+            mainUsernameDisplay: mainUsernameSpan,
+            pfpImage: pfpImg,
+            greetingPrefix: "",
+            fallbackUsername: "Offline"
+        })) {
+            console.warn("Firestore non raggiungibile, uso i dati in cache.");
+            return;
+        }
+
+        console.warn("Errore:", error);
         if (usernameSpan) usernameSpan.textContent = "Offline";
         if (mainUsernameSpan) mainUsernameSpan.textContent = "Offline";
     }
