@@ -27,8 +27,11 @@ const accountNavLinks = Array.from(document.querySelectorAll(".account-nav-link"
 const viewAccount = document.getElementById("account");
 const viewSessione = document.getElementById("sessione");
 
-const usernameDisplay = document.getElementById('usernameDisplay'); 
-const displayUsername = document.getElementById('displayUsername'); 
+const usernameDisplay = document.getElementById('usernameDisplay');
+const displayUsername = document.getElementById('displayUsername');
+// elemento dedicato, senza saluto random
+const displayUsernameSettings = document.getElementById('displayUsernameSettings');
+
 const userPfp = document.getElementById('currentPfp');
 
 const listaBenvenuti = [
@@ -43,6 +46,11 @@ const listaBenvenuti = [
 const ottieniSalutoCasuale = () => {
     const randomIndex = Math.floor(Math.random() * listaBenvenuti.length);
     return listaBenvenuti[randomIndex];
+};
+
+// solo username, no saluto
+const setUsernameSettings = (username) => {
+    if (displayUsernameSettings) displayUsernameSettings.textContent = username;
 };
 
 const setActiveNav = (hash) => {
@@ -105,6 +113,7 @@ async function loadUserData(uid) {
             greetingPrefix: `${ottieniSalutoCasuale()}`,
             fallbackUsername: "Offline"
         })) {
+            setUsernameSettings(cachedProfile.username || "Offline");
             if (editUsername) editUsername.value = cachedProfile.username || "";
             if (editBio) editBio.value = cachedProfile.bio || "";
             console.warn("Browser offline, uso i dati in cache.");
@@ -113,6 +122,7 @@ async function loadUserData(uid) {
 
         if (usernameDisplay) usernameDisplay.textContent = "Offline";
         if (mainUsernameSpan) mainUsernameSpan.textContent = "Ciao, Offline";
+        setUsernameSettings("Offline");
         if (editUsername) editUsername.value = "";
         if (editBio) editBio.value = "";
         return;
@@ -136,6 +146,7 @@ async function loadUserData(uid) {
                 fallbackUsername: "Utente"
             });
 
+            setUsernameSettings(username);
             if (editUsername) editUsername.value = username;
             if (editBio) editBio.value = data.bio || "";
 
@@ -153,6 +164,7 @@ async function loadUserData(uid) {
                 greetingPrefix: `${ottieniSalutoCasuale()}`,
                 fallbackUsername: "Ospite"
             })) {
+                setUsernameSettings(cachedProfile.username || "Ospite");
                 if (editUsername) editUsername.value = cachedProfile.username || "";
                 if (editBio) editBio.value = cachedProfile.bio || "";
                 return;
@@ -160,6 +172,7 @@ async function loadUserData(uid) {
 
             console.error("Documento utente non trovato in Firestore per l'UID:", uid);
             if (mainUsernameSpan) mainUsernameSpan.textContent = "Ciao, Ospite";
+            setUsernameSettings("Ospite");
         }
     } catch (error) {
         const mainUsernameSpan = document.getElementById('displayUsername');
@@ -174,6 +187,7 @@ async function loadUserData(uid) {
             greetingPrefix: `${ottieniSalutoCasuale()}`,
             fallbackUsername: "Offline"
         })) {
+            setUsernameSettings(cachedProfile.username || "Offline");
             if (editUsername) editUsername.value = cachedProfile.username || "";
             if (editBio) editBio.value = cachedProfile.bio || "";
             console.warn("Firestore non raggiungibile, uso i dati in cache.");
@@ -205,7 +219,8 @@ if (saveBtn) saveBtn.addEventListener('click', async () => {
         if (displayUsername) {
             displayUsername.innerHTML = `Profilo aggiornato, <span id="usernameColor">${editUsername.value}</span>`;
         }
-        
+        setUsernameSettings(editUsername.value);
+
         alert("Profilo aggiornato con successo!");
     } catch (error) {
         console.error("Errore nel salvataggio:", error);
