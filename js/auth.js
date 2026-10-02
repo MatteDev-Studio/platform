@@ -37,19 +37,55 @@ window.handleAuth = async () => {
     const passField = document.getElementById('password');
     const userField = document.getElementById('username');
     const authBtn = document.getElementById('authBtn');
+    const authMsg = document.getElementById('authMsg');
 
-    if (!emailField || !passField) return;
+    if (!emailField || !passField || !authBtn || authBtn.disabled) return;
 
-    const email = emailField.value;
+    const email = emailField.value.trim();
     const pass = passField.value;
-    const isLogin = authBtn.innerText === "Accedi";
+    const isLogin = authBtn.textContent.trim() === "Accedi";
+    const username = userField?.value.trim() || email.split('@')[0];
+
+    if (!email || !pass || (!isLogin && !userField?.value.trim())) {
+        if (authMsg) {
+            authMsg.textContent = "Compila tutti i campi obbligatori.";
+            authMsg.className = "msg error";
+        } else {
+            alert("Compila tutti i campi obbligatori.");
+        }
+        return;
+    }
+
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+        if (authMsg) {
+            authMsg.textContent = "Inserisci un indirizzo email valido.";
+            authMsg.className = "msg error";
+        } else {
+            alert("Inserisci un indirizzo email valido.");
+        }
+        return;
+    }
+
+    if (pass.length < 6) {
+        if (authMsg) {
+            authMsg.textContent = "La password deve essere di almeno 6 caratteri.";
+            authMsg.className = "msg error";
+        } else {
+            alert("La password deve essere di almeno 6 caratteri.");
+        }
+        return;
+    }
+
+    const initialButtonText = isLogin ? "Accedi" : "Registrati";
+    authBtn.disabled = true;
+    authBtn.textContent = isLogin ? "Accesso in corso..." : "Registrazione in corso...";
+    if (authMsg) authMsg.className = "msg";
 
     try {
         if (isLogin) {
             await signInWithEmailAndPassword(auth, email, pass);
             // Il redirect automatico è gestito da onAuthStateChanged
         } else {
-            const username = userField.value || email.split('@')[0];
             const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
             const user = userCredential.user;
 
@@ -68,7 +104,15 @@ window.handleAuth = async () => {
             window.location.href = "/pages/emailverify.html";
         }
     } catch (err) {
-        alert("Errore: " + err.message);
+        if (authMsg) {
+            authMsg.textContent = "Errore: " + err.message;
+            authMsg.className = "msg error";
+        } else {
+            alert("Errore: " + err.message);
+        }
+    } finally {
+        authBtn.disabled = false;
+        authBtn.textContent = initialButtonText;
     }
 };
 

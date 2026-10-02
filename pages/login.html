@@ -291,7 +291,7 @@
             <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
         </div>
 
-        <button class="btn-primary" id="authBtn" onclick="handleAuth()">Accedi</button>
+        <button class="btn-primary" id="authBtn">Accedi</button>
 
         <div class="msg" id="authMsg"></div>
     </div>
@@ -338,54 +338,9 @@
         }
     }
 
-    function showMsg(text, type) {
-        const el = document.getElementById('authMsg');
-        el.textContent = text;
-        el.className = 'msg ' + type;
-    }
-
-    function handleAuth() {
-        const btn = document.getElementById('authBtn');
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-        const username = document.getElementById('username').value.trim();
-
-        // Basic validation
-        if (!email || !password) {
-            showMsg('Compila tutti i campi obbligatori.', 'error');
-            return;
-        }
-        if (!isLogin && !username) {
-            showMsg('Inserisci un username per registrarti.', 'error');
-            return;
-        }
-        if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
-            showMsg('Inserisci un indirizzo email valido.', 'error');
-            return;
-        }
-        if (password.length < 6) {
-            showMsg('La password deve essere di almeno 6 caratteri.', 'error');
-            return;
-        }
-
-        // Show loading
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner"></span>' + (isLogin ? 'Accesso...' : 'Registrazione...');
-
-        // Simulate — replace with real auth logic
-        setTimeout(() => {
-            btn.disabled = false;
-            btn.textContent = isLogin ? 'Accedi' : 'Registrati';
-            showMsg(
-                isLogin ? 'Accesso effettuato con successo!' : 'Account creato! Controlla la tua email.',
-                'success'
-            );
-        }, 1400);
-    }
-
     // Enter key support
     document.addEventListener('keydown', e => {
-        if (e.key === 'Enter') handleAuth();
+        if (e.key === 'Enter') document.getElementById('authBtn').click();
     });
 </script>
 </body>
