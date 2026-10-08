@@ -115,8 +115,8 @@ confirmUpload.onclick = async () => {
         console.log("Firebase user:", user.uid);
 
         const formData = new FormData();
-        formData.append('image', pendingFile);
-        formData.append('uid', currentUserUID);
+        formData.append('pfp', pendingFile);
+        formData.append('userId', currentUserUID);
 
         console.log("PFP upload avviato");
         // Inoltra l'immagine al Cloudflare Worker per l'elaborazione e l'archiviazione.
@@ -131,7 +131,9 @@ confirmUpload.onclick = async () => {
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.message || `Upload PFP fallito (${response.status})`);
+            const detail = data.error || data.message || `Upload PFP fallito (${response.status})`;
+            console.error("Dettaglio errore Worker:", detail);
+            throw new Error(`Errore Server: ${response.status} - ${detail}`);
         }
 
         console.log("PFP upload completato");
