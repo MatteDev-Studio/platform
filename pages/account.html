@@ -37,7 +37,7 @@
                 <section class="account-section is-highlight">
                     <div class="account-section-head">
                         <h2 class="account-section-title">Profilo</h2>
-                        <p class="account-section-sub">Modifica nome, bio e immagine.</p>
+                        <p class="account-section-sub">Modifica nome, bio e link dell'immagine.</p>
                     </div>
 
                     <div class="account-panel">
@@ -61,15 +61,9 @@
                             </div>
 
                             <div class="account-field">
-                                <label>Immagine profilo</label>
-                                <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Carica immagine profilo">
-                                    <div class="upload-icon" aria-hidden="true"></div>
-                                    <p class="main-text">Trascina qui la tua immagine</p>
-                                    <p class="sub-text">oppure seleziona un file dal dispositivo</p>
-                                    <button type="button" class="upload-cta">Scegli file</button>
-                                    <input type="file" id="fileInput" accept="image/*" hidden>
-                                    <input type="hidden" id="editPfp">
-                                </div>
+                                <label for="editPfp">Link immagine profilo</label>
+                                <input type="url" id="editPfp" placeholder="https://esempio.com/immagine.webp" autocomplete="url">
+                                <p class="account-hint">Inserisci un link HTTPS pubblico all'immagine.</p>
                             </div>
 
                             <div class="account-actions">
@@ -100,26 +94,7 @@
         </main>
     </div>
 
-    <div id="warningModal" class="modal" aria-hidden="true">
-        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="warningTitle">
-            <h3 id="warningTitle" class="modal-title">⚠️ Avviso importante</h3>
-            <p class="modal-text">
-                L'immagine verrà caricata sui nostri server.
-                <br><br>
-                Il file sarà <b>pubblico</b>.
-                Non ci assumiamo responsabilità per il contenuto pubblicato.
-                I contenuti potranno essere rimossi solo su richiesta.
-            </p>
-
-            <div class="modal-footer">
-                <button class="btn-modal btn-cancel" id="closeModal" type="button">Annulla</button>
-                <button class="btn-modal btn-confirm" id="confirmUpload" type="button">Accetto e carico</button>
-            </div>
-        </div>
-    </div>
-
     <script type="module" src="/js/auth.js"></script>
     <script type="module" src="/js/acc.js"></script>
-    <script type="module" src="/js/Pfp.js"></script>
 </body>
 </html>

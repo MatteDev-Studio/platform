@@ -20,6 +20,7 @@ const db = getFirestore(app);
 // Elementi DOM
 const editUsername = document.getElementById('editUsername');
 const editBio = document.getElementById('editBio');
+const editPfp = document.getElementById('editPfp');
 const saveBtn = document.getElementById('saveBtn');
 const sessionLogoutBtn = document.getElementById('sessionLogoutBtn');
 const deleteAccountBtn = document.getElementById('deleteAccountBtn');
@@ -116,6 +117,7 @@ async function loadUserData(uid) {
             setUsernameSettings(cachedProfile.username || "Offline");
             if (editUsername) editUsername.value = cachedProfile.username || "";
             if (editBio) editBio.value = cachedProfile.bio || "";
+            if (editPfp) editPfp.value = cachedProfile.pfp || "";
             console.warn("Browser offline, uso i dati in cache.");
             return;
         }
@@ -125,6 +127,7 @@ async function loadUserData(uid) {
         setUsernameSettings("Offline");
         if (editUsername) editUsername.value = "";
         if (editBio) editBio.value = "";
+        if (editPfp) editPfp.value = "";
         return;
     }
 
@@ -149,6 +152,7 @@ async function loadUserData(uid) {
             setUsernameSettings(username);
             if (editUsername) editUsername.value = username;
             if (editBio) editBio.value = data.bio || "";
+            if (editPfp) editPfp.value = data.pfp || "";
 
             console.log("Dati caricati con successo!");
         } else {
@@ -167,6 +171,7 @@ async function loadUserData(uid) {
                 setUsernameSettings(cachedProfile.username || "Ospite");
                 if (editUsername) editUsername.value = cachedProfile.username || "";
                 if (editBio) editBio.value = cachedProfile.bio || "";
+                if (editPfp) editPfp.value = cachedProfile.pfp || "";
                 return;
             }
 
@@ -190,6 +195,7 @@ async function loadUserData(uid) {
             setUsernameSettings(cachedProfile.username || "Offline");
             if (editUsername) editUsername.value = cachedProfile.username || "";
             if (editBio) editBio.value = cachedProfile.bio || "";
+            if (editPfp) editPfp.value = cachedProfile.pfp || "";
             console.warn("Firestore non raggiungibile, uso i dati in cache.");
             return;
         }
@@ -203,6 +209,17 @@ if (saveBtn) saveBtn.addEventListener('click', async () => {
     const user = auth.currentUser;
     if (!user) return alert("Devi essere loggato per salvare!");
 
+    const pfpUrl = editPfp?.value.trim() || "";
+    if (pfpUrl) {
+        try {
+            const parsedPfpUrl = new URL(pfpUrl);
+            if (parsedPfpUrl.protocol !== "https:") throw new Error("Protocollo non sicuro");
+        } catch {
+            alert("Inserisci un link HTTPS valido per l'immagine profilo.");
+            return;
+        }
+    }
+
     saveBtn.disabled = true;
     saveBtn.textContent = "Salvataggio in corso...";
 
@@ -210,7 +227,8 @@ if (saveBtn) saveBtn.addEventListener('click', async () => {
         const userRef = doc(db, "users", user.uid);
         const updatedData = {
             username: editUsername.value,
-            bio: editBio.value
+            bio: editBio.value,
+            pfp: pfpUrl
         };
 
         await updateDoc(userRef, updatedData);
@@ -220,6 +238,14 @@ if (saveBtn) saveBtn.addEventListener('click', async () => {
             displayUsername.innerHTML = `Profilo aggiornato, <span id="usernameColor">${editUsername.value}</span>`;
         }
         setUsernameSettings(editUsername.value);
+        if (userPfp) {
+            if (pfpUrl) {
+                userPfp.src = pfpUrl;
+            } else {
+                userPfp.removeAttribute("src");
+            }
+            userPfp.alt = editUsername.value || "Utente";
+        }
 
         alert("Profilo aggiornato con successo!");
     } catch (error) {
@@ -280,13 +306,3 @@ if (deleteAccountBtn) {
         }
     });
 }
-
-window.updateFirestorePfp = async (newUrl) => {
-    const user = auth.currentUser;
-    if (user) {
-        const userRef = doc(db, "users", user.uid);
-        await updateDoc(userRef, { pfp: newUrl });
-        cacheProfile(user.uid, { pfp: newUrl });
-        console.log("Firestore aggiornato con il nuovo URL della foto!");
-    }
-};
