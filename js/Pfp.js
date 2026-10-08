@@ -1,21 +1,9 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; // Importa Firestore
+import { auth } from "./auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { cacheProfile } from "./profileCache.js";
 
-// 1. Configurazione Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyC7Tbqt5FzJK8Z_USkCMWxXiHZp8uRN26A",
-    authDomain: "mattedev-account.firebaseapp.com",
-    projectId: "mattedev-account",
-    storageBucket: "mattedev-account.firebasestorage.app",
-    messagingSenderId: "77268069903",
-    appId: "1:77268069903:web:040aa6c3981eb3650afd7a"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app); // Inizializza Firestore
+const db = getFirestore(auth.app);
 
 // Riferimenti DOM
 const dropZone = document.getElementById('dropZone');
@@ -46,9 +34,7 @@ let currentUserUID = null;
 
 // Recupera l'utente corrente
 onAuthStateChanged(auth, (user) => {
-    if (user) {
-        currentUserUID = user.uid;
-    }
+    currentUserUID = user?.uid ?? null;
 });
 
 // Gestione selezione file
@@ -96,7 +82,15 @@ dropZone.addEventListener("drop", (e) => {
 confirmUpload.onclick = async () => {
     warningModal.style.display = "none";
     warningModal.setAttribute("aria-hidden", "true");
-    if (!pendingFile || !currentUserUID) return;
+    if (!pendingFile) return;
+
+    const user = auth.currentUser;
+    if (!user) {
+        const message = "Utente non autenticato. Effettua nuovamente il login.";
+        if (mainText) mainText.innerText = message;
+        alert(message);
+        return;
+    }
 
     if (!navigator.onLine) {
         if (mainText) mainText.innerText = "Sei offline, impossibile caricare l'immagine.";
@@ -106,20 +100,32 @@ confirmUpload.onclick = async () => {
 
     if (mainText) mainText.innerText = "Elaborazione immagine...";
 
-    const formData = new FormData();
-    formData.append('image', pendingFile);
-    formData.append('uid', currentUserUID);
-
     try {
+        const token = await user.getIdToken(true);
+        currentUserUID = user.uid;
+        console.log("Firebase user:", user.uid);
+
+        const formData = new FormData();
+        formData.append('image', pendingFile);
+        formData.append('uid', currentUserUID);
+
+        console.log("PFP upload avviato");
         // 1. Upload sul tuo server Ubuntu
         const response = await fetch('https://pfp-api.mattedev.com/upload-pfp', {
             method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
             body: formData
         });
 
-        if (!response.ok) throw new Error(`Errore Server: ${response.status}`);
         const data = await response.json();
 
+        if (!response.ok) {
+            throw new Error(data.message || `Upload PFP fallito (${response.status})`);
+        }
+
+        console.log("PFP upload completato");
         if (data.url) {
             // 2. Aggiorna Firestore con l'URL corretto (quello col trattino -)
             const userRef = doc(db, "users", currentUserUID);
@@ -139,8 +145,9 @@ confirmUpload.onclick = async () => {
 
     } catch (err) {
         console.error("Errore:", err);
-        if (mainText) mainText.innerText = "Errore durante il caricamento";
-        alert("Errore nell'aggiornamento del profilo.");
+        const message = err instanceof Error ? err.message : "Errore nell'aggiornamento del profilo.";
+        if (mainText) mainText.innerText = message;
+        alert(message);
     }
 };
 
