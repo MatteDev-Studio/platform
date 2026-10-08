@@ -4,6 +4,7 @@ import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs
 import { cacheProfile } from "./profileCache.js";
 
 const db = getFirestore(auth.app);
+const MAX_PFP_SIZE_BYTES = 5 * 1024 * 1024;
 
 // Riferimenti DOM
 const dropZone = document.getElementById('dropZone');
@@ -39,12 +40,20 @@ onAuthStateChanged(auth, (user) => {
 
 // Gestione selezione file
 function prepareUpload(file) {
-    if (file && file.type.startsWith('image/')) {
-        pendingFile = file;
-        openModal();
-    } else {
+    if (!file || !file.type.startsWith('image/')) {
+        pendingFile = null;
         alert("Per favore seleziona un'immagine valida.");
+        return;
     }
+
+    if (file.size >= MAX_PFP_SIZE_BYTES) {
+        pendingFile = null;
+        alert("L'immagine deve avere una dimensione inferiore a 5 MB.");
+        return;
+    }
+
+    pendingFile = file;
+    openModal();
 }
 
 dropZone.onclick = () => fileInput.click();
@@ -110,7 +119,7 @@ confirmUpload.onclick = async () => {
         formData.append('uid', currentUserUID);
 
         console.log("PFP upload avviato");
-        // 1. Upload sul tuo server Ubuntu
+        // Inoltra l'immagine al Cloudflare Worker per l'elaborazione e l'archiviazione.
         const response = await fetch('https://pfp-api.mattedev.com/upload-pfp', {
             method: 'POST',
             headers: {
