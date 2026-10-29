@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Mattedev Platform</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
     <script type="module" src="/js/FolderLogic.js"></script>
     <script type="module" src="/js/web.js"></script>
     <script type="module" src="/js/custom/FirebaseDashboard.js"></script>
+    <script type="module" src="/js/dashboard-layout.js"></script>
     <script type="module" src="/js/BtnLogOut.js"></script>
     <style>
         @import url('/fonts/fonts.css'); /* Importa i font locali */
@@ -39,6 +41,46 @@
 </head>
 <body>
 
+<button id="dashboardEditToggle" class="dashboard-edit-toggle" type="button" aria-label="Modifica dashboard" aria-pressed="false" title="Modifica dashboard">
+    <span aria-hidden="true"></span>
+</button>
+
+<aside id="widgetPanel" class="widget-panel" aria-label="Aggiungi widget" hidden>
+    <div class="widget-panel-heading">
+        <div>
+            <p class="widget-panel-eyebrow">PERSONALIZZA</p>
+            <h2>Widget</h2>
+        </div>
+        <button id="closeWidgetPanel" class="widget-panel-close" type="button" aria-label="Nascondi pannello widget">×</button>
+    </div>
+    <p class="widget-panel-hint">Aggiungi un widget e trascinalo dove preferisci. Puoi cambiarne la dimensione dalla dashboard.</p>
+    <div class="dashboard-spacing-control">
+        <label for="dashboardColumnSpacing">Distanza tra icone <span id="dashboardColumnSpacingValue">8 px</span></label>
+        <input id="dashboardColumnSpacing" type="range" min="0" max="24" step="1" value="8">
+        <label for="dashboardRowSpacing">Distanza tra righe <span id="dashboardRowSpacingValue">8 px</span></label>
+        <input id="dashboardRowSpacing" type="range" min="0" max="32" step="1" value="8">
+    </div>
+    <div class="weather-city-picker">
+        <label for="weatherCityInput">Città del meteo</label>
+        <div class="weather-city-search">
+            <input id="weatherCityInput" type="search" placeholder="Cerca una città" autocomplete="off">
+            <button id="weatherCitySearch" type="button">Cerca</button>
+        </div>
+        <div id="weatherCityResults" class="weather-city-results" role="listbox" aria-label="Risultati città"></div>
+    </div>
+    <section class="app-picker" aria-labelledby="appPickerTitle">
+        <h3 id="appPickerTitle">App</h3>
+        <div id="dashboardAppList" class="dashboard-app-list"></div>
+    </section>
+    <div class="widget-picker">
+        <button type="button" data-add-widget="clock"><span aria-hidden="true">◷</span><span>Orologio</span></button>
+        <button type="button" data-add-widget="weather"><span aria-hidden="true">☼</span><span>Meteo</span></button>
+        <button type="button" data-add-widget="date"><span aria-hidden="true">▦</span><span>Data</span></button>
+    </div>
+</aside>
+<button id="openWidgetPanel" class="open-widget-panel" type="button" hidden>Widget</button>
+
+<p id="layoutSaveStatus" class="layout-save-status" role="status" aria-live="polite"></p>
 
 <div class="user-profile-widget" id="userProfile">
     <div class="island-main-content">
@@ -59,32 +101,32 @@
 
 <main class="card-container">
 <span id="displayUsername" class="username-big">Caricamento... <span id="usernameColor"></span></span>
-    <div class="apps-wrapper">
+    <div class="apps-wrapper" id="dashboardCanvas">
 
         
         
-        <a href="https://ai.mattedev.com" class="app-item">
+        <a href="https://ai.mattedev.com" class="app-item" data-layout-id="app-ai">
             <div class="app-icon-container">
                 <img src="https://media.mattedev.com/img/ai/ailogo.png" alt="Account" class="app-icon"> 
             </div>
             <span class="app-name">AI</span>
         </a>
 
-        <a href="https://bitshort.mattedev.com" class="app-item">
+        <a href="https://bitshort.mattedev.com" class="app-item" data-layout-id="app-bitshort">
             <div class="app-icon-container">
                 <img src="https://media.mattedev.com/img/bitshort/logo.ico" alt="BitShort" class="app-icon">
             </div>
             <span class="app-name">BitShort</span>
         </a>
         
-        <a href="account.html" class="app-item">
+        <a href="account.html" class="app-item" data-layout-id="app-account">
             <div class="app-icon-container">
                 <img src="https://media.mattedev.com/img/mlogo.jpg" alt="Account" class="app-icon">
             </div>
             <span class="app-name">Account</span>
         </a>
 
-        <a href="https://quill.mattedev.com" class="app-item webview-link">
+        <a href="https://quill.mattedev.com" class="app-item webview-link" data-layout-id="app-quill">
             <div class="app-icon-container">
                 <img src="https://media.mattedev.com/img/quill/logo.png" alt="Quill" class="app-icon">
             </div>
@@ -92,21 +134,22 @@
         </a> 
 
 
-        <a href="https://horizon.mattedev.com" class="app-item webview-link">
+        <a href="https://horizon.mattedev.com" class="app-item webview-link" data-layout-id="app-horizon">
             <div class="app-icon-container">
                 <img src="https://media.mattedev.com/img/mattemeteo/icon.ico" alt="Meteo" class="app-icon">
             </div>
             <span class="app-name">Horizon</span>
         </a>
         
-        <div class="app-item" id="openFolder">
-            <div class="app-icon-container folder-icon app-item">
+        <div class="app-item" id="openFolder" data-layout-id="app-discover">
+            <div class="app-icon-container folder-icon">
                 <span class="open-symbol">+</span>
             </div>
             <span class="app-name">Discover</span>
         </div>
+    </div>
 
-        <div class="folder-overlay" id="folderOverlay">
+    <div class="folder-overlay" id="folderOverlay">
         <div class="folder-content">
             <div class="folder-header">
                 <h2>Discover</h2>
@@ -123,9 +166,6 @@
             </div>
         </div>
         <button class="close-folder-btn">✕</button>
-    </div>
-
-        
     </div>
 
     

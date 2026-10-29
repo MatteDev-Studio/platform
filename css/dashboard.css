@@ -1,0 +1,632 @@
+body {
+    align-items: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+body .card-container {
+    width: min(100%, 980px);
+    max-width: 980px;
+    min-height: 100vh;
+    padding: 112px 24px 48px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+body .username-big {
+    max-width: 100%;
+    margin-bottom: 20px;
+    font-size: clamp(1.45rem, 4vw, 2.2rem);
+    overflow-wrap: anywhere;
+}
+
+.apps-wrapper {
+    width: max-content;
+    max-width: 100%;
+    display: grid;
+    grid-template-columns: repeat(6, calc(var(--dashboard-icon-size, 72px) + 5px));
+    grid-auto-rows: 100px;
+    grid-auto-flow: row;
+    column-gap: var(--dashboard-column-gap, 8px);
+    row-gap: var(--dashboard-row-gap, 8px);
+    padding: 12px 0 32px;
+    align-items: stretch;
+    justify-content: center;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.app-item {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    align-self: stretch;
+    justify-self: stretch;
+    animation: none;
+}
+
+.app-item .app-icon-container {
+    width: var(--dashboard-icon-size, 72px);
+    max-width: calc(100% - 5px);
+    height: var(--dashboard-icon-size, 72px);
+    flex: 0 0 auto;
+    border-radius: 20px;
+}
+
+.app-item .app-name {
+    max-width: 100%;
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+.app-item:hover .app-icon-container {
+    transform: scale(1.06) translateY(-3px);
+}
+
+.dashboard-edit-toggle {
+    position: fixed;
+    z-index: 1200;
+    top: 24px;
+    left: 24px;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 50%;
+    background: rgba(15, 17, 24, 0.78);
+    backdrop-filter: blur(18px);
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.dashboard-edit-toggle:hover {
+    transform: scale(1.08);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.dashboard-edit-toggle span {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #7ee6ad;
+    box-shadow: 0 0 14px rgba(126, 230, 173, 0.65);
+}
+
+body.dashboard-editing .dashboard-edit-toggle {
+    background: rgba(126, 230, 173, 0.17);
+    border-color: rgba(126, 230, 173, 0.7);
+}
+
+body.dashboard-editing .dashboard-edit-toggle span {
+    background: #ffcc66;
+    box-shadow: 0 0 14px rgba(255, 204, 102, 0.7);
+}
+
+.widget-panel {
+    position: fixed;
+    z-index: 1100;
+    top: 80px;
+    left: 24px;
+    width: min(310px, calc(100vw - 32px));
+    max-height: calc(100vh - 100px);
+    padding: 20px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 22px;
+    background: rgba(13, 15, 21, 0.94);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    animation: widgetPanelIn 0.22s ease-out;
+}
+
+.widget-panel[hidden] {
+    display: none;
+}
+
+.open-widget-panel[hidden] {
+    display: none;
+}
+
+.open-widget-panel {
+    position: fixed;
+    z-index: 1100;
+    top: 80px;
+    left: 24px;
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 12px;
+    background: rgba(13, 15, 21, 0.94);
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+    backdrop-filter: blur(18px);
+}
+
+.widget-panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.widget-panel-eyebrow {
+    margin-bottom: 5px;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+
+.widget-panel-heading h2 {
+    font-size: 20px;
+}
+
+.widget-panel-close {
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.07);
+    color: white;
+    font-size: 21px;
+    cursor: pointer;
+}
+
+.widget-panel-hint {
+    margin: 12px 0 16px;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.dashboard-spacing-control {
+    margin-bottom: 16px;
+    padding: 12px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.dashboard-spacing-control label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 9px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 11px;
+}
+
+.dashboard-spacing-control label span {
+    color: #b6e5ff;
+    font-variant-numeric: tabular-nums;
+}
+
+.dashboard-spacing-control input {
+    width: 100%;
+    accent-color: #b6e5ff;
+}
+
+.app-picker {
+    margin-bottom: 16px;
+}
+
+.app-picker h3 {
+    margin-bottom: 7px;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+}
+
+.dashboard-app-list {
+    display: grid;
+    gap: 5px;
+}
+
+.dashboard-app-restore {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.045);
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 11px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dashboard-app-restore:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.dashboard-app-restore span:last-child {
+    color: #b6e5ff;
+    font-size: 17px;
+}
+
+.app-picker-empty {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 11px;
+}
+
+.app-remove-button {
+    position: absolute;
+    z-index: 3;
+    top: 4px;
+    right: 4px;
+    display: none;
+    width: 25px;
+    height: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 50%;
+    background: rgba(30, 30, 36, 0.94);
+    color: white;
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+body.dashboard-editing .app-remove-button {
+    display: block;
+}
+
+.apps-wrapper > .app-removed {
+    display: none !important;
+}
+
+.widget-picker {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+}
+
+.widget-picker button {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.045);
+    color: white;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.widget-picker button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.widget-picker button span:first-child {
+    width: 24px;
+    color: #b6e5ff;
+    font-size: 20px;
+    text-align: center;
+}
+
+.weather-city-picker {
+    margin-bottom: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.weather-city-picker label {
+    display: block;
+    margin-bottom: 8px;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+}
+
+.weather-city-search {
+    display: flex;
+    gap: 7px;
+}
+
+.weather-city-search input {
+    min-width: 0;
+    height: 38px;
+    margin: 0;
+    padding: 0 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.055);
+    color: white;
+    font-size: 12px;
+}
+
+.weather-city-search input:focus {
+    border-color: rgba(182, 229, 255, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.weather-city-search button {
+    flex: 0 0 auto;
+    padding: 0 11px;
+    border: 1px solid rgba(182, 229, 255, 0.24);
+    border-radius: 10px;
+    background: rgba(182, 229, 255, 0.1);
+    color: #d3efff;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.weather-city-search button:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+.weather-city-results {
+    display: grid;
+    gap: 5px;
+    margin-top: 7px;
+}
+
+.weather-city-option {
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.045);
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 11px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.weather-city-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.dashboard-widget {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 22px;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.025)),
+        rgba(13, 16, 23, 0.82);
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    animation: widgetPanelIn 0.35s ease-out;
+}
+
+.dashboard-widget[data-widget-type="clock"] {
+    background:
+        radial-gradient(ellipse at 85% 0%, rgba(116, 165, 255, 0.18), transparent 70%),
+        rgba(13, 16, 23, 0.88);
+}
+
+.widget-header {
+    display: flex;
+    min-height: 18px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.widget-title {
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.widget-controls {
+    display: none;
+    flex: 0 0 auto;
+    gap: 5px;
+}
+
+body.dashboard-editing .widget-controls {
+    display: flex;
+}
+
+.widget-controls button {
+    min-width: 27px;
+    height: 25px;
+    padding: 0 6px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.26);
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.widget-controls button:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.widget-body {
+    display: flex;
+    height: calc(100% - 24px);
+    min-height: 0;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.widget-clock-time {
+    color: white;
+    font-size: clamp(25px, 4vw, 42px);
+    font-weight: 600;
+    letter-spacing: -2px;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+}
+
+.widget-clock-date,
+.widget-secondary {
+    margin-top: 7px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.widget-weather-temperature {
+    color: white;
+    font-size: clamp(27px, 4vw, 40px);
+    font-weight: 600;
+    letter-spacing: -1.5px;
+}
+
+.widget-weather-condition {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 13px;
+}
+
+.widget-weather-location {
+    margin-top: 7px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 11px;
+}
+
+.widget-action {
+    align-self: flex-start;
+    margin-top: 10px;
+    padding: 7px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.17);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.07);
+    color: white;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.layout-save-status {
+    position: fixed;
+    z-index: 1300;
+    right: 24px;
+    bottom: 20px;
+    max-width: min(420px, calc(100vw - 32px));
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    background: rgba(15, 17, 24, 0.94);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.layout-save-status.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.layout-save-status.is-error {
+    border-color: rgba(255, 123, 114, 0.4);
+    color: #ffb4ad;
+}
+
+body.dashboard-editing .apps-wrapper > .app-item,
+body.dashboard-editing .apps-wrapper > .dashboard-widget {
+    cursor: grab;
+    touch-action: none;
+}
+
+body.dashboard-editing .apps-wrapper > .app-item {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+body.dashboard-editing .dashboard-widget {
+    border-color: rgba(182, 229, 255, 0.35);
+}
+
+.apps-wrapper > .is-being-dragged {
+    z-index: 5;
+    opacity: 0.75;
+    cursor: grabbing !important;
+    transition: none;
+}
+
+@keyframes widgetPanelIn {
+    from { opacity: 0; transform: translateY(7px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 700px) {
+    body .card-container {
+        padding: 102px 20px 36px;
+    }
+
+    .apps-wrapper {
+        grid-template-columns: repeat(4, calc(var(--dashboard-icon-size, 64px) + 5px));
+        grid-auto-rows: 92px;
+        column-gap: var(--dashboard-column-gap, 8px);
+        row-gap: var(--dashboard-row-gap, 8px);
+    }
+
+    .app-item .app-icon-container {
+        width: var(--dashboard-icon-size, 64px);
+        max-width: calc(100% - 5px);
+        height: var(--dashboard-icon-size, 64px);
+    }
+
+    .widget-panel {
+        top: 72px;
+        left: 16px;
+    }
+
+    .open-widget-panel {
+        top: 72px;
+        left: 16px;
+    }
+
+    .dashboard-edit-toggle {
+        top: 18px;
+        left: 16px;
+    }
+}
+
+@media (max-width: 420px) {
+    body .card-container {
+        padding-right: 16px;
+        padding-left: 16px;
+    }
+
+    .apps-wrapper {
+        grid-template-columns: repeat(3, calc(var(--dashboard-icon-size, 64px) + 5px));
+        column-gap: var(--dashboard-column-gap, 8px);
+        row-gap: var(--dashboard-row-gap, 8px);
+    }
+
+    .dashboard-widget {
+        padding: 12px;
+        border-radius: 18px;
+    }
+
+    .user-profile-widget {
+        top: 12px;
+        right: 12px;
+    }
+
+    .layout-save-status {
+        right: 16px;
+        bottom: 14px;
+    }
+}

@@ -1,12 +1,16 @@
-const folderBtn = document.getElementById('openFolder');
+const folderButton = document.getElementById('openFolder');
 const folderOverlay = document.getElementById('folderOverlay');
-const closeBtn = document.querySelector('.close-folder-btn');
 
-folderBtn.onclick = () => folderOverlay.classList.add('active');
+if (folderButton && folderOverlay) {
+    folderButton.addEventListener('click', () => folderOverlay.classList.add('active'));
 
-// Chiudi cliccando la X o fuori dal contenuto
-folderOverlay.onclick = (e) => {
-    if (e.target === folderOverlay || e.target === closeBtn) {
-        folderOverlay.classList.remove('active');
-    }
-};
+    folderOverlay.addEventListener('click', (event) => {
+        if (event.target === folderOverlay || event.target.closest('.close-folder-btn')) {
+            folderOverlay.classList.remove('active');
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') folderOverlay.classList.remove('active');
+    });
+}
