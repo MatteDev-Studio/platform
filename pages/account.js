@@ -72,9 +72,7 @@ function render(user) {
     $('#verify-email').textContent = user.email;
     return show('verify');
   }
-  if (redirectUrl) return location.replace(redirectUrl);
-  $('#done-name').textContent = user.displayName || user.email;
-  show('done');
+  location.replace(redirectUrl || '/pages/dashboard.html');
 }
 
 // --- Registrazione: crea utente, riserva username in transazione ---
