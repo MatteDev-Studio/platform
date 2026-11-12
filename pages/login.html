@@ -1,347 +1,62 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/other.css">
-    <title>Login — MatteDev</title>
-    <link href="/fonts/fonts.css" rel="stylesheet">
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --bg: #0a0a0c;
-            --card: #131318;
-            --card-border: rgba(255,255,255,0.07);
-            --input-bg: #1c1c24;
-            --input-border: rgba(255,255,255,0.08);
-            --input-focus: rgba(120, 160, 255, 0.35);
-            --accent: #7b9fff;
-            --accent-glow: rgba(123, 159, 255, 0.18);
-            --text: #f0f0f5;
-            --muted: #5a5a72;
-            --subtle: #2e2e3e;
-            --error: #ff6b6b;
-            --success: #6bffb8;
-        }
-
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            overflow: hidden;
-        }
-
-        /* Ambient background */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(ellipse 60% 50% at 20% 80%, rgba(80, 100, 200, 0.12) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 40% at 80% 20%, rgba(120, 80, 220, 0.08) 0%, transparent 60%);
-            pointer-events: none;
-        }
-
-        .card {
-            position: relative;
-            width: 100%;
-            max-width: 420px;
-            background: var(--card);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 44px 40px 36px;
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 40px 80px rgba(0,0,0,0.5);
-            animation: slideUp 0.5s cubic-bezier(.22,.68,0,1.2) both;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(28px) scale(0.97); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        /* Logo / Brand */
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 32px;
-        }
-        .brand-icon {
-            width: 36px; height: 36px;
-            background: linear-gradient(135deg, #7b9fff, #a78bfa);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: 15px;
-            color: #fff;
-            letter-spacing: -0.5px;
-        }
-        .brand-name {
-            font-family: 'Syne', sans-serif;
-            font-weight: 700;
-            font-size: 17px;
-            color: var(--text);
-            letter-spacing: -0.3px;
-        }
-
-        /* Heading */
-        h1 {
-            font-family: 'Syne', sans-serif;
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            line-height: 1.1;
-            color: var(--text);
-            margin-bottom: 6px;
-            transition: all 0.3s;
-        }
-        .subtitle {
-            font-size: 14px;
-            color: var(--muted);
-            margin-bottom: 28px;
-            font-weight: 300;
-            line-height: 1.5;
-            transition: all 0.3s;
-        }
-
-        /* Tab switcher */
-        .tabs {
-            display: flex;
-            background: var(--input-bg);
-            border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 28px;
-            border: 1px solid var(--input-border);
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 9px;
-            border: none;
-            border-radius: 9px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.25s;
-            background: transparent;
-            color: var(--muted);
-        }
-        .tab-btn.active {
-            background: var(--subtle);
-            color: var(--text);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-        }
-
-        /* Form fields */
-        .fields { display: flex; flex-direction: column; gap: 12px; }
-
-        .field-group {
-            display: flex; flex-direction: column; gap: 6px;
-            overflow: hidden;
-            transition: all 0.35s cubic-bezier(.22,.68,0,1.2);
-        }
-        .field-group.hidden {
-            max-height: 0;
-            opacity: 0;
-            gap: 0;
-            pointer-events: none;
-        }
-        .field-group.visible {
-            max-height: 80px;
-            opacity: 1;
-        }
-
-        label {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--muted);
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
-        }
-
-        input {
-            width: 100%;
-            padding: 13px 16px;
-            background: var(--input-bg);
-            border: 1px solid var(--input-border);
-            border-radius: 12px;
-            color: var(--text);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        input::placeholder { color: var(--muted); }
-        input:focus {
-            border-color: rgba(123, 159, 255, 0.5);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-        input.error { border-color: var(--error); }
-
-        /* Submit button */
-        .btn-primary {
-            width: 100%;
-            padding: 14px;
-            margin-top: 8px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #7b9fff 0%, #a78bfa 100%);
-            color: #fff;
-            font-family: 'Syne', sans-serif;
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: 0.2px;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
-            box-shadow: 0 4px 20px rgba(123, 159, 255, 0.25);
-        }
-        .btn-primary:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-            box-shadow: 0 6px 28px rgba(123, 159, 255, 0.35);
-        }
-        .btn-primary:active { transform: translateY(0); opacity: 1; }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-        /* Message */
-        .msg {
-            margin-top: 12px;
-            padding: 10px 14px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 400;
-            display: none;
-            line-height: 1.4;
-        }
-        .msg.error { background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.25); color: var(--error); display: block; }
-        .msg.success { background: rgba(107,255,184,0.1); border: 1px solid rgba(107,255,184,0.2); color: var(--success); display: block; }
-
-        /* Footer */
-        .footer {
-            margin-top: 24px;
-            padding-top: 20px;
-            border-top: 1px solid var(--card-border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--muted);
-        }
-        .footer a {
-            color: var(--muted);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .footer a:hover { color: var(--text); }
-
-        /* Divider */
-        .divider {
-            width: 3px; height: 3px;
-            background: var(--subtle);
-            border-radius: 50%;
-        }
-
-        /* Loading spinner */
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .spinner {
-            display: inline-block;
-            width: 14px; height: 14px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            vertical-align: middle;
-            margin-right: 6px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Account MatteDev: un solo accesso per tutte le app.">
+  <title>Account · MatteDev</title>
+  <link rel="stylesheet" href="./account.css">
 </head>
 <body>
+  <main id="auth-screen" class="screen" hidden>
+    <section class="card">
+      <p id="app-hint" class="hint" hidden></p>
+      <h1 id="auth-title">Bentornato</h1>
+      <p id="auth-subtitle" class="sub">Accedi al tuo account MatteDev.</p>
+      <div class="tabs" role="tablist" aria-label="Tipo di accesso">
+        <button id="login-tab" class="tab active" type="button" role="tab" aria-selected="true" data-mode="login">Accedi</button>
+        <button id="signup-tab" class="tab" type="button" role="tab" aria-selected="false" data-mode="signup">Registrati</button>
+      </div>
+      <form id="auth-form" class="form">
+        <label id="username-field" class="label" hidden>Username
+          <input name="username" type="text" autocomplete="username" minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" placeholder="3-20 caratteri: lettere, numeri, _" autocapitalize="none" spellcheck="false">
+        </label>
+        <label class="label">Email
+          <input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="nome@esempio.it">
+        </label>
+        <label class="label">Password
+          <input name="password" type="password" autocomplete="current-password" required minlength="8" maxlength="128" placeholder="Almeno 8 caratteri">
+        </label>
+        <button id="auth-submit" class="submit" type="submit"><span>Accedi</span><span aria-hidden="true">→</span></button>
+      </form>
+      <p id="auth-error" class="msg error" hidden></p>
+      <footer class="foot">
+        <a href="https://privacy.mattedev.com/privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+        <a href="https://privacy.mattedev.com/terms.html" target="_blank" rel="noopener noreferrer">Termini di servizio</a>
+      </footer>
+    </section>
+  </main>
 
-<div class="card">
-    
+  <main id="verify-screen" class="screen" hidden>
+    <section class="card">
+      <h1>Controlla la email</h1>
+      <p class="sub">Link di verifica inviato a <strong id="verify-email"></strong>. Conferma per continuare.</p>
+      <button id="check-verification" class="submit" type="button"><span>Ho verificato</span><span aria-hidden="true">→</span></button>
+      <button id="resend-verification" class="link" type="button">Non hai ricevuto l'email? <strong>Reinvia</strong></button>
+      <button id="verify-sign-out" class="link" type="button">Usa un altro account</button>
+      <p id="verify-message" class="msg" hidden></p>
+    </section>
+  </main>
 
-    <h1 id="authTitle">Bentornato</h1>
-    <p class="subtitle" id="authSub">Accedi col tuo account MatteDev per continuare.</p>
+  <main id="done-screen" class="screen" hidden>
+    <section class="card">
+      <h1>Ciao, <span id="done-name"></span></h1>
+      <p class="sub">Sei connesso a MatteDev. Apri una tua app per continuare.</p>
+      <button id="done-sign-out" class="submit" type="button"><span>Esci</span><span aria-hidden="true">→</span></button>
+    </section>
+  </main>
 
-    <div class="tabs">
-        <button class="tab-btn active" id="tabLogin" onclick="setMode(true)">Accedi</button>
-        <button class="tab-btn" id="tabRegister" onclick="setMode(false)">Registrati</button>
-    </div>
-
-    <div class="fields">
-        <div class="field-group hidden" id="usernameWrapper">
-            <label for="username">Username</label>
-            <input type="text" id="username" placeholder="il_tuo_username" autocomplete="username">
-        </div>
-
-        <div class="field-group visible">
-            <label for="email">Email</label>
-            <input type="email" id="email" placeholder="latua@email.com" autocomplete="email">
-        </div>
-
-        <div class="field-group visible">
-            <label for="password">Password</label>
-            <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
-        </div>
-
-        <button class="btn-primary" id="authBtn">Accedi</button>
-
-        <div class="msg" id="authMsg"></div>
-    </div>
-
-    <div class="footer">
-        <a href="https://privacy.mattedev.com/privacy.html">Privacy Policy</a>
-        <div class="divider"></div>
-        <a href="https://privacy.mattedev.com/terms.html">Termini di Servizio</a>
-        <div class="divider"></div>
-        <a href="mailto:support@mattedev.com">Supporto</a>
-    </div>
-</div>
-
-<script type="module" src="/js/auth.js"></script>
-<script>
-    let isLogin = true;
-
-    function setMode(login) {
-        isLogin = login;
-        const title = document.getElementById('authTitle');
-        const sub = document.getElementById('authSub');
-        const btn = document.getElementById('authBtn');
-        const userWrapper = document.getElementById('usernameWrapper');
-        const tabLogin = document.getElementById('tabLogin');
-        const tabRegister = document.getElementById('tabRegister');
-        const msg = document.getElementById('authMsg');
-
-        msg.className = 'msg';
-
-        if (isLogin) {
-            title.textContent = 'Bentornato';
-            sub.textContent = 'Accedi al tuo account per continuare.';
-            btn.textContent = 'Accedi';
-            userWrapper.className = 'field-group hidden';
-            tabLogin.className = 'tab-btn active';
-            tabRegister.className = 'tab-btn';
-        } else {
-            title.textContent = 'Crea account';
-            sub.textContent = 'Unisciti a MatteDev. Ci vuole un minuto.';
-            btn.textContent = 'Registrati';
-            userWrapper.className = 'field-group visible';
-            tabLogin.className = 'tab-btn';
-            tabRegister.className = 'tab-btn active';
-        }
-    }
-
-    // Enter key support
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Enter') document.getElementById('authBtn').click();
-    });
-</script>
+  <div id="loading-screen" class="screen"><span class="loader"></span>Caricamento</div>
+  <script type="module" src="./account.js"></script>
 </body>
 </html>
